@@ -1,0 +1,50 @@
+name: build
+on: push
+jobs:
+    build:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v2
+            - run: |
+                git clone git@github.com:astron/astron
+                set ORIGDIR=%CD%
+                mkdir libraries
+                set LIBROOT=%CD%\libraries
+                mkdir dependencies
+                set DEPDIR=%CD%\dependencies
+                cd dependencies
+                Invoke-WebRequest -Uri https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.2.zip -OutFile yaml-cpp.zip
+                7z x yaml-cpp.zip
+                ren yaml-cpp-yaml-cpp-0.6.2 yaml-cpp
+                cd yaml-cpp
+                cmake -DYAML_CPP_BUILD_TOOLS=OFF .
+                msbuild /p:Configuration=Release ALL_BUILD.vcxproj
+                set CMAKE_LIBRARY_PATH=%CMAKE_LIBRARY_PATH%;%CD%\Release
+                set CMAKE_INCLUDE_PATH=%CMAKE_INCLUDE_PATH%;%CD%
+                cd ..
+                Invoke-WebRequest -Uri https://github.com/mongodb/mongo-cxx-driver/archive/r3.4.0.zip -OutFile mongo-cxx-driver.zip
+                7z x mongo-cxx-driver.zip
+                cd mongo-cxx-driver-r3.4.0\build
+                cmake -DCMAKE_INSTALL_PREFIX=%LIBROOT%\mongo-cxx-driver -DCMAKE_PREFIX_PATH=%LIBROOT%\mongoc -DLIBMONGOC_DIR=%LIBROOT%\mongoc ..
+                msbuild /p:Configuration=Release ALL_BUILD.vcxproj
+                msbuild /p:Configuration=Release INSTALL.vcxproj
+                cd ..\..\
+                Invoke-WebRequest -Uri https://github.com/libuv/libuv/archive/v1.24.0.zip -OutFile libuv.zip
+                7z x libuv.zip
+                cd libuv-1.24.0
+                vcbuild release shared x64
+                cd ..\..\
+                set CMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH%;%LIBROOT%\mongo-cxx-driver
+                cd %ORIGDIR%
+                cd astron
+                cd build
+                cmake -DCMAKE_INSTALL_PREFIX=%LIBROOT%\mongo-cxx-driver -DCMAKE_PREFIX_PATH=%LIBROOT%\mongoc;%DEPDIR%\libuv-1.24.0;%DEPDIR%\libuv-1.24.0\Release -DCMAKE_BUILD_TYPE=Release ..
+                msbuild /p:Configuration=Release ALL_BUILD.vcxproj
+                cd Release
+                copy /Y %DEPDIR%\libuv-1.24.0\Release\*.dll .
+                copy /Y %LIBROOT%\mongoc\bin\*.dll .
+                copy /Y %LIBROOT%\mongo-cxx-driver\bin\*.dll .
+                7z a astron.zip *
+                echo %CD%
+                echo %CD%
+                cd ..
