@@ -5,6 +5,7 @@ jobs:
         runs-on: windows-latest
         steps:
             - uses: actions/checkout@v2
+            - uses: warrenbuckley/Setup-MSBuild@v1
             - run: |
                 git clone https://github.com/astron/astron
                 set ORIGDIR=%CD%
