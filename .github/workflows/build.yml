@@ -18,13 +18,14 @@ jobs:
                 ren yaml-cpp-yaml-cpp-0.6.2 yaml-cpp
                 cd yaml-cpp
                 echo 1
-                cmake -DYAML_CPP_BUILD_TOOLS=OFF . & exit 0
+                cmake -DYAML_CPP_BUILD_TOOLS=OFF .
                 echo 2
                 msbuild /p:Configuration=Release ALL_BUILD.vcxproj
                 echo 3
                 set CMAKE_LIBRARY_PATH=%CMAKE_LIBRARY_PATH%;%CD%\Release
                 echo 4
                 set CMAKE_INCLUDE_PATH=%CMAKE_INCLUDE_PATH%;%CD%
+                echo 5
                 cd ..
                 Invoke-WebRequest -Uri https://github.com/mongodb/mongo-cxx-driver/archive/r3.4.0.zip -OutFile mongo-cxx-driver.zip
                 7z x mongo-cxx-driver.zip
