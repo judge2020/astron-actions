@@ -6,7 +6,7 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - run: |
-                git clone git@github.com:astron/astron
+                git clone https://github.com/astron/astron
                 set ORIGDIR=%CD%
                 mkdir libraries
                 set LIBROOT=%CD%\libraries
@@ -47,4 +47,5 @@ jobs:
                 7z a astron.zip *
                 echo %CD%
                 echo %CD%
+                dir
                 cd ..
